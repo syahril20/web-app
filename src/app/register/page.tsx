@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Page() {
   const [username, setUsername] = useState("");
@@ -7,15 +8,27 @@ export default function Page() {
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    // Generate dan simpan deviceId jika belum ada
+    if (!localStorage.getItem("deviceId")) {
+      localStorage.setItem("deviceId", uuidv4());
+    }
+  }, []);
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
 
+    const deviceId = localStorage.getItem("deviceId") || "";
+
     try {
       const res = await fetch("/api/proxy-register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Device-Id": deviceId, // Kirim device id
+        },
         body: JSON.stringify({ username, password }),
       });
 
